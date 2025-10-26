@@ -62,15 +62,16 @@ echo "Starting pretraining..."
 # - Run the script. If it runs out of memory (OOM), decrease it.
 # - If it runs fine, you can try increasing it to improve GPU utilization (MFU).
 # - Refer to the detailed comments in `run1000.sh` for an example of this tuning process.
-torchrun --standalone --nproc_per_node=1 -m scripts.base_train -- \
+torchrun --standalone --nproc_per_node=4 -m scripts.base_train -- \
     --depth=20 \
-    --device_batch_size=4 \
+    --device_batch_size=16 \
     --run=$WANDB_RUN
+    --num_iterations=3000
 
 # 6. Evaluate Pretrained Model (Optional but Recommended)
 echo "Evaluating pretrained model..."
-torchrun --standalone --nproc_per_node=1 -m scripts.base_loss
-torchrun --standalone --nproc_per_node=1 -m scripts.base_eval
+torchrun --standalone --nproc_per_node=4 -m scripts.base_loss
+torchrun --standalone --nproc_per_node=4 -m scripts.base_eval
 
 # 7. Generate Final Report
 python -m nanochat.report generate

@@ -6,7 +6,7 @@
 # --- User Configuration ---
 # 1. Set your GCS bucket and data path.
 #    Assumes your data is in parquet format with a 'text' column.
-GCS_DATA_PATH="gs://your-gcs-bucket/path/to/data/*.parquet"
+GCS_DATA_PATH="gs://fineweb2-pl/huggingface.co/datasets/HuggingFaceFW/fineweb-2/resolve/main/data/pol_Latn/train/000_00000.parquet"
 
 # 2. Set your WandB run name for logging, or "dummy" to disable.
 WANDB_RUN="custom-pretrain-run"

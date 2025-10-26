@@ -6,11 +6,11 @@ from nanochat.tokenizer import HuggingFaceTokenizer, SPECIAL_TOKENS
 # 1. --- User Configuration ---
 # Set this to the Hugging Face Hub name of your desired tokenizer.
 # For example: "gpt2", "bert-base-uncased", "EleutherAI/gpt-neo-125M"
-HF_TOKENIZER_NAME = "allegro/herbert-klej-cased-tokenizer-v1"
+HF_TOKENIZER_NAME = "./tokenizer"
 
 # 2. --- Load, Add Special Tokens, and Save Tokenizer ---
 print(f"Loading tokenizer '{HF_TOKENIZER_NAME}' from Hugging Face...")
-tokenizer_wrapper = HuggingFaceTokenizer.from_pretrained(HF_TOKENIZER_NAME)
+tokenizer_wrapper = HuggingFaceTokenizer.from_directory(HF_TOKENIZER_NAME)
 
 # Add nanochat's special tokens (like <|bos|>) if they don't already exist.
 # This is crucial for the dataloader and other parts of the code.

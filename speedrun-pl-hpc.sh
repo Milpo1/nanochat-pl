@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/env bash
 
 set -euo pipefail  # Exit on error, undefined vars, pipe failures
 
@@ -10,7 +10,9 @@ NUM_ITERATIONS="${NUM_ITERATIONS:-100}"
 # --- HPC Environment Setup ---
 # Load required modules (adjust for your HPC system)
 module purge
-module load cuda/12.1.1 python/3.11.3-gcccore-12.3.0 || true
+
+module load NVHPC/25.9-CUDA-12.9.1 Python/3.11.5
+
 module list
 
 # Set OpenMP threads based on available CPUs
@@ -18,14 +20,8 @@ export OMP_NUM_THREADS=${SLURM_CPUS_PER_TASK:-8}
 export MKL_NUM_THREADS=$OMP_NUM_THREADS
 
 # GPU count from SLURM
-NGPUS=${SLURM_GPUS_ON_NODE:-2}
+NGPUS=${SLURM_GPUS_ON_NODE:-1}
 
-# --- Directory Structure ---
-# Use persistent storage for project base
-export NANOCHAT_BASE_DIR="/net/afscra/people/plgmilpo1/test/nanochat-pl"
-mkdir -p "$NANOCHAT_BASE_DIR"
-
-# Separate persistent cache from scratch
 export UV_CACHE_DIR="${NANOCHAT_BASE_DIR}/.cache/uv"
 mkdir -p "$UV_CACHE_DIR"
 
@@ -96,13 +92,8 @@ log "=== Preparing training data ==="
 if [ ! -d "$DATA_DIR" ] || [ -z "$(ls -A $DATA_DIR 2>/dev/null)" ]; then
     log "Data directory empty or missing, preparing data..."
     mkdir -p "$DATA_DIR"
-    
-    # Uncomment and configure your data download method:
-    # Option 1: GCS
-    # gsutil -m cp "gs://your-bucket/path/*.parquet" "$DATA_DIR/"
-    
-    # Option 2: Local copy
-    # cp /path/to/source/data/*.parquet "$DATA_DIR/"
+
+    uv run --with google-cloud-storage gcp_fetch.py --key=$HOME/.keys/gcs-read-only.json --src=$NANOCHAT_DATA_SOURCE_PATTERN --dest=$DATA_DIR
     
     # Verify data
     if [ -z "$(ls -A $DATA_DIR)" ]; then

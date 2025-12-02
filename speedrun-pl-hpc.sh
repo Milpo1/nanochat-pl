@@ -11,7 +11,7 @@ NUM_ITERATIONS="${NUM_ITERATIONS:-100}"
 # Load required modules (adjust for your HPC system)
 module purge
 
-module load NVHPC/25.9-CUDA-12.9.1 Python/3.11.5
+module load CUDA/12.8.0 ML-bundle/25.04 Python/3.11.5 
 
 module list
 
@@ -69,7 +69,7 @@ fi
 # Create or activate virtual environment
 if [ ! -d "$VENV_DIR" ]; then
     log "Creating virtual environment at $VENV_DIR..."
-    uv venv "$VENV_DIR"
+    uv venv "$VENV_DIR" --python $(which python)
 fi
 
 log "Activating virtual environment..."
@@ -77,12 +77,13 @@ source "$VENV_DIR/bin/activate"
 
 # Sync dependencies
 log "Syncing dependencies..."
-UV_CACHE_DIR="$UV_CACHE_DIR" uv sync --extra gpu --locked
+UV_EXTRA_INDEX_URL="$PIP_EXTRA_INDEX_URL" UV_CACHE_DIR="$UV_CACHE_DIR" uv sync --extra gpu
 
 # Verify installation
 log "Python: $(which python)"
 log "Python version: $(python --version)"
 
+log "$(python -c "import torch; print(f'Torch Version: {torch.__version__}\nCUDA Available: {torch.cuda.is_available()}\nDevice Name: {torch.cuda.get_device_name(0)}')")"
 # Reset nanochat report
 python -m nanochat.report reset
 

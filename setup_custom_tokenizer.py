@@ -1,10 +1,11 @@
+# %%
 import os
 import torch
 from tokenizers import Tokenizer
 from nanochat.common import get_base_dir
 
 # 1. Define paths
-my_tokenizer_path = "./tokenizer/tokenizer_fineweb4_trained.json" # <--- POINT TO YOUR FILE
+my_tokenizer_path = "./tokenizer/herbert-tokenizer.json" # <--- POINT TO YOUR FILE
 base_dir = "./"
 target_dir = os.path.join(base_dir, "tokenizer")
 os.makedirs(target_dir, exist_ok=True)

@@ -106,16 +106,16 @@ else
     log "Data already exists in $DATA_DIR ($(ls -1 $DATA_DIR | wc -l) files)"
 fi
 
-# --- Tokenizer Setup ---
-log "=== Setting up custom tokenizer ==="
+# # --- Tokenizer Setup ---
+# log "=== Setting up custom tokenizer ==="
 
-if [ ! -f "setup_custom_tokenizer.py" ]; then
-    log "ERROR: setup_custom_tokenizer.py not found!"
-    exit 1
-fi
+# if [ ! -f "setup_custom_tokenizer.py" ]; then
+#     log "ERROR: setup_custom_tokenizer.py not found!"
+#     exit 1
+# fi
 
-python setup_custom_tokenizer.py 2>&1 | tee -a "$LOGFILE"
-log "Tokenizer setup complete"
+# python setup_custom_tokenizer.py 2>&1 | tee -a "$LOGFILE"
+# log "Tokenizer setup complete"
 
 # --- Pretraining ---
 log "=== Starting pretraining ==="

@@ -103,20 +103,6 @@ class HuggingFaceTokenizer:
     def id_to_token(self, id):
         return self.tokenizer.id_to_token(id)
 
-    def _encode_one(self, text, prepend=None, append=None):
-        # encode a single string
-        # prepend/append can be either a string of a special token or a token id directly.
-        assert isinstance(text, str)
-        ids = []
-        if prepend is not None:
-            prepend_id = prepend if isinstance(prepend, int) else self.encode_special(prepend)
-            ids.append(prepend_id)
-        ids.extend(self.tokenizer.encode(text, add_special_tokens=False).ids)
-        if append is not None:
-            append_id = append if isinstance(append, int) else self.encode_special(append)
-            ids.append(append_id)
-        return ids
-
     def encode_special(self, text):
         # encode a single special token via exact match
         return self.tokenizer.token_to_id(text)
@@ -125,11 +111,42 @@ class HuggingFaceTokenizer:
         bos = self.encode_special("<|bos|>")
         return bos
 
-    def encode(self, text, *args, **kwargs):
-        if isinstance(text, str):
-            return self._encode_one(text, *args, **kwargs)
-        elif isinstance(text, list):
-            return [self._encode_one(t, *args, **kwargs) for t in text]
+    def encode(self, text, prepend=None, append=None, num_threads=None):
+        # Note: num_threads is ignored here as HF Tokenizers handles parallelism internally
+        
+        # Resolve special tokens to IDs
+        prepend_id = None
+        if prepend:
+            prepend_id = prepend if isinstance(prepend, int) else self.encode_special(prepend)
+            
+        append_id = None
+        if append:
+            append_id = append if isinstance(append, int) else self.encode_special(append)
+
+        # Handle Batch (List of strings) - Crucial for DataLoader efficiency
+        if isinstance(text, list):
+            # Use fast Rust-based batch encoding
+            encodings = self.tokenizer.encode_batch(text, add_special_tokens=False)
+            ids_list = [e.ids for e in encodings]
+            
+            # Apply prepend/append manually to ids
+            if prepend_id is not None or append_id is not None:
+                new_ids_list = []
+                for row in ids_list:
+                    new_row = row
+                    if prepend_id is not None: new_row = [prepend_id] + new_row
+                    if append_id is not None: new_row = new_row + [append_id]
+                    new_ids_list.append(new_row)
+                return new_ids_list
+            return ids_list
+
+        # Handle Single String
+        elif isinstance(text, str):
+            ids = self.tokenizer.encode(text, add_special_tokens=False).ids
+            if prepend_id is not None: ids = [prepend_id] + ids
+            if append_id is not None: ids = ids + [append_id]
+            return ids
+            
         else:
             raise ValueError(f"Invalid input type: {type(text)}")
 

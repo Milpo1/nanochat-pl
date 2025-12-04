@@ -9,8 +9,12 @@
 #SBATCH --partition=plgrid-gpu-gh200
 #SBATCH --account=plgksdrllm-gpu-gh200
 
-export NANOCHAT_DATA_SOURCE_PATTERN="gs://finewebedupl/data-test/*.parquet"
+export NANOCHAT_DATA_SOURCE_PATTERN="gs://finewebedupl/runpod/full_dataset_gt_2.5/*.parquet"
 export NANOCHAT_BASE_DIR="${SCRATCH}/finewebedupl"
+
+export DEVICE_BATCH_SIZE=16
+export NUM_ITERATIONS=-1
+
 
 mkdir -p "$NANOCHAT_BASE_DIR"
 

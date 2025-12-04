@@ -52,3 +52,9 @@ enterprise_pii_classification,safety,multiple choice,10,3395,50,,"Enterprise PII
 bbq,safety,multiple choice,3,58492,50,,"Bias Benchmark for QA (BBQ) is a multiple choice dataset constructed to determine a model's level of stereotyping and bias against 11 different protected groups. Though originally designed as a three-choice multiple choice test we reformatted it to use two choices. It consists of 58,492 samples split across 11 categories."
 gpqa_main,world knowledge,multiple choice,5,448,25,,"GPQA is a challenging dataset of 448 multiple-choice questions written by domain experts in biology, physics and chemistry."
 gpqa_diamond,world knowledge,multiple choice,5,198,25,,A subset of highest quality questions from teh GPQA dataset
+arc_challenge_pl,polish,multiple choice,10,2376,25,,Polish translation of ARC Challenge
+hellaswag_zeroshot_pl,polish,multiple choice,0,10042,25,,Polish translation of HellaSwag (Zero-shot)
+hellaswag_pl,polish,multiple choice,10,10042,25,,Polish translation of HellaSwag
+mmlu_zeroshot_pl,polish,multiple choice,0,14042,25,,Polish translation of MMLU (Zero-shot)
+mmlu_pl,polish,multiple choice,5,14042,25,,Polish translation of MMLU
+gsm8k_pl,polish,language modeling,5,1319,0,,Polish translation of GSM8K

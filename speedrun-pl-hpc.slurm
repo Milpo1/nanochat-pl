@@ -14,7 +14,8 @@ export NANOCHAT_BASE_DIR="${SCRATCH}/finewebedupl"
 
 export DEVICE_BATCH_SIZE=16
 export NUM_ITERATIONS=-1
-
+export EVAL_EVERY=250
+export CORE_METRIC_EVERY=1000
 
 mkdir -p "$NANOCHAT_BASE_DIR"
 

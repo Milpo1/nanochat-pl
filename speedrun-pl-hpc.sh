@@ -7,7 +7,7 @@ DEPTH="${DEPTH:-20}"
 DEVICE_BATCH_SIZE="${DEVICE_BATCH_SIZE:-8}"
 NUM_ITERATIONS="${NUM_ITERATIONS:-100}"
 
-# WANDB_RUN="${WANDB_RUN:-fineweb2edupl-hpc-$(date +%Y%m%d-%H%M)}"
+WANDB_RUN="${WANDB_RUN:-fineweb2edupl-hpc-$(date +%Y%m%d-%H%M)}"
 # --- HPC Environment Setup ---
 # Load required modules (adjust for your HPC system)
 module purge
@@ -31,9 +31,9 @@ LOG_DIR="$NANOCHAT_BASE_DIR/logs"
 mkdir -p "$LOG_DIR"
 LOGFILE="$LOG_DIR/run_${SLURM_JOB_ID:-local}.log"
 
-# export WANDB_DIR="$NANOCHAT_BASE_DIR/wandb_logs"
-# mkdir -p "$WANDB_DIR"
-# export WANDB_PROJECT="fineweb2edupl"
+export WANDB_DIR="$NANOCHAT_BASE_DIR/wandb_logs"
+mkdir -p "$WANDB_DIR"
+export WANDB_PROJECT="fineweb2edupl"
 
 # Virtual environment in persistent location
 VENV_DIR="$NANOCHAT_BASE_DIR/.venv"
@@ -129,6 +129,7 @@ log "  - Depth: $DEPTH"
 log "  - Device batch size: $DEVICE_BATCH_SIZE"
 log "  - GPUs: $NGPUS"
 log "  - Iterations: $NUM_ITERATIONS"
+log "  - WandB Run: $WANDB_RUN"
 
 # Run training with error handling
 if torchrun \
@@ -140,7 +141,8 @@ if torchrun \
     --num_iterations="$NUM_ITERATIONS" \
     --eval_every="$EVAL_EVERY" \
     --core_metric_every="$CORE_METRIC_EVERY" \
-    --save_every="$SAVE_EVERY"
+    --save_every="$SAVE_EVERY" \
+    --run="$WANDB_RUN" \
     2>&1 | tee -a "$LOGFILE"; then
     log "Pretraining completed successfully!"
 else

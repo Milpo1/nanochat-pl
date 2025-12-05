@@ -261,12 +261,25 @@ while True:
             "The planets of the solar system are:",
             "My favorite color is",
             "If 5*x + 3 = 13, then x is",
+            "Stolicą Francji jest",
+            "Chemiczny symbol złota to",
+            "Jeśli wczoraj był piątek, to jutro będzie",
+            "Przeciwieństwem gorącego jest",
+            "Planety układu słonecznego to:",
+            "Mój ulubiony kolor to",
+            "Jeśli 5*x + 3 = 13, to x wynosi",
+            "W Polsce je się nożem i",
+            "Żyła w Gdańsku cnotka Zocha,\nZ każdym chciałaby się kochać,\nLecz stalową cnotę miała,\nRzewnie więc płakała.",
+            "Płynie sobie rower wodny,\nPłynie sobie rower wodny,\nJak w niego przyp...my,\nTo będzie podwodny.",
+            "Kiedy rum zaszumi w głowie,\nCały świat nabiera treści,\nWtedy chętnie słucha człowiek\nMorskich opowieści."
         ]
+
+
         engine = Engine(orig_model, tokenizer) # use orig_model to avoid recompilation
         for prompt in prompts:
             tokens = tokenizer(prompt, prepend="<|bos|>")
             with autocast_ctx:
-                sample, _ = engine.generate_batch(tokens, num_samples=1, max_tokens=16, temperature=0)
+                sample, _ = engine.generate_batch(tokens, num_samples=1, max_tokens=24, temperature=0)
             print0(tokenizer.decode(sample[0]))
         model.train()
 

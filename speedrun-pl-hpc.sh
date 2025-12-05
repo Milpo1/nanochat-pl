@@ -139,7 +139,8 @@ if torchrun \
     --device_batch_size="$DEVICE_BATCH_SIZE" \
     --num_iterations="$NUM_ITERATIONS" \
     --eval_every="$EVAL_EVERY" \
-    --core_metric_every="$CORE_METRIC_EVERY"
+    --core_metric_every="$CORE_METRIC_EVERY" \
+    --save_every="$SAVE_EVERY"
     2>&1 | tee -a "$LOGFILE"; then
     log "Pretraining completed successfully!"
 else

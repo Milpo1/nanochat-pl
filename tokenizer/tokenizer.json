@@ -47,51 +47,6 @@
       "rstrip": false,
       "normalized": false,
       "special": true
-    },
-    {
-      "id": 50564,
-      "content": "<|assistant_end|>",
-      "single_word": false,
-      "lstrip": false,
-      "rstrip": false,
-      "normalized": false,
-      "special": true
-    },
-    {
-      "id": 50565,
-      "content": "<|python_start|>",
-      "single_word": false,
-      "lstrip": false,
-      "rstrip": false,
-      "normalized": false,
-      "special": true
-    },
-    {
-      "id": 50566,
-      "content": "<|python_end|>",
-      "single_word": false,
-      "lstrip": false,
-      "rstrip": false,
-      "normalized": false,
-      "special": true
-    },
-    {
-      "id": 50567,
-      "content": "<|output_start|>",
-      "single_word": false,
-      "lstrip": false,
-      "rstrip": false,
-      "normalized": false,
-      "special": true
-    },
-    {
-      "id": 50568,
-      "content": "<|output_end|>",
-      "single_word": false,
-      "lstrip": false,
-      "rstrip": false,
-      "normalized": false,
-      "special": true
     }
   ],
   "normalizer": {

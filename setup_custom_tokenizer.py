@@ -21,11 +21,6 @@ SPECIAL_TOKENS = [
     "<|user_start|>",     # User message start
     "<|user_end|>",       # User message end
     "<|assistant_start|>",# Assistant message start
-    "<|assistant_end|>",  # Assistant message end
-    "<|python_start|>",   # Tool use start
-    "<|python_end|>",     # Tool use end
-    "<|output_start|>",   # Tool output start
-    "<|output_end|>",     # Tool output end
 ]
 
 print("Adding special tokens...")

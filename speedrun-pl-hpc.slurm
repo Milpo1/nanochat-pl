@@ -10,7 +10,7 @@
 #SBATCH --account=plgksdrllm-gpu-gh200
 
 export NANOCHAT_DATA_SOURCE_PATTERN="gs://finewebedupl/runpod/full_dataset_gt_2.5/*.parquet"
-export NANOCHAT_BASE_DIR="${SCRATCH}/finewebedupl"
+export NANOCHAT_BASE_DIR="${SCRATCH}/finewebedupl2/nanochat-pl"
 
 export DEVICE_BATCH_SIZE=16
 export NUM_ITERATIONS=-1

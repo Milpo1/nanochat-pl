@@ -10,16 +10,17 @@
 #SBATCH --account=plgksdrllm-gpu-gh200
 
 export NANOCHAT_DATA_SOURCE_PATTERN="gs://finewebedupl/runpod/full_dataset_gt_2.5/*.parquet"
-export NANOCHAT_BASE_DIR="${SCRATCH}/finewebedupl2/nanochat-pl"
+export FINEWEB_BASE_DIR="${SCRATCH}/finewebedupl2/"
+export NANOCHAT_BASE_DIR="${FINEWEB_BASE_DIR}/nanochat-pl/"
 
 export DEVICE_BATCH_SIZE=16
-export NUM_ITERATIONS=-1
-export EVAL_EVERY=250
-export CORE_METRIC_EVERY=1000
+export NUM_ITERATIONS=800
+export EVAL_EVERY=100
+export CORE_METRIC_EVERY=250
 
-mkdir -p "$NANOCHAT_BASE_DIR"
+mkdir -p "$FINEWEB_BASE_DIR"
 
-cd $NANOCHAT_BASE_DIR
+cd $FINEWEB_BASE_DIR
 
 if [ ! -d "nanochat-pl" ]; then
     echo "Cloning nanochat-pl..."

@@ -98,8 +98,8 @@ log "=== Preparing training data ==="
 if [ ! -d "$DATA_DIR" ] || [ -z "$(ls -A $DATA_DIR 2>/dev/null)" ]; then
     log "Data directory empty or missing, preparing data..."
     mkdir -p "$DATA_DIR"
-
-    uv run --with google-cloud-storage gcp_fetch.py --key=$HOME/.keys/gcs-read-only.json --src=$NANOCHAT_DATA_SOURCE_PATTERN --dest=$DATA_DIR
+    uv pip install google-cloud-storage
+    python gcp_fetch.py --key=$HOME/.keys/gcs-read-only.json --src=$NANOCHAT_DATA_SOURCE_PATTERN --dest=$DATA_DIR
     
     # Verify data
     if [ -z "$(ls -A $DATA_DIR)" ]; then

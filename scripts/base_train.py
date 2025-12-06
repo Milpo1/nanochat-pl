@@ -168,21 +168,11 @@ if resuming:
 # -----------------------------------------------------------------------------
 # Initialize the DataLoaders for train/val
 tokens_dir = os.path.join(base_dir, "tokenized_data")
-dataloader_resume_state_dict = None if not resuming else meta_data["dataloader_state_dict"]
+dataloader_resume_state_dict = None
 train_loader = tokenizing_distributed_data_loader_with_state(device_batch_size, max_seq_len, split="train", device=device, resume_state_dict=dataloader_resume_state_dict)
 build_val_loader = lambda: tokenizing_distributed_data_loader(device_batch_size, max_seq_len, split="val", device=device)
 x, y, dataloader_state_dict = next(train_loader) # kick off load of the very first batch of data
 
-if resuming:
-    print0(f"!!! RESCUE MODE: Skipping data to bypass corruption")
-    import time
-    t_skip = time.time()
-    for i in range(1000): 
-        if i % 100 == 0: 
-            print0(f"Skipping micro-batch {i}...")
-        # Just consume the data and throw it away
-        x, y, dataloader_state_dict = next(train_loader) 
-    print0(f"!!! RESCUE MODE: Skipped 1000 batches in {time.time() - t_skip:.2f}s. Resuming training...")
 # -----------------------------------------------------------------------------
 # Set up hyperparameter schedulers
 
@@ -332,9 +322,7 @@ while True:
         train_loss = loss.detach() # for logging
         loss = loss / grad_accum_steps # each .backward() is a grad sum => normalize loss here
         loss.backward()
-        if step > 38290: print(f"[Rank {ddp_rank}] Fetching data for next micro-step...")
         x, y, dataloader_state_dict = next(train_loader) # prefetch the next batch while the GPU is busy with forward/backward
-        if step > 38290: print(f"[Rank {ddp_rank}] Fetched data.")
     # gradient clipping
     grad_clip_enabled = grad_clip > 0.0
     if grad_clip_enabled:

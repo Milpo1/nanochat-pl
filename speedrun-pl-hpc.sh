@@ -146,6 +146,7 @@ if torchrun \
     --core_metric_every="$CORE_METRIC_EVERY" \
     --save_every="$SAVE_EVERY" \
     --run="$WANDB_RUN" \
+    --resume_from_step=38000 \
     2>&1 | tee -a "$LOGFILE"; then
     log "Pretraining completed successfully!"
 else

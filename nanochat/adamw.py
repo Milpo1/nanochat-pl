@@ -5,7 +5,7 @@ Not a general optimizer! But works for our specific use.
 import torch
 import torch.distributed as dist
 from torch import Tensor
-
+import sys
 
 class DistAdamW(torch.optim.Optimizer):
     """
@@ -15,8 +15,20 @@ class DistAdamW(torch.optim.Optimizer):
     def __init__(self, param_groups, lr: float = 1e-3, betas: tuple[float, float] = (0.9, 0.999), eps: float = 1e-8, weight_decay: float = 0.01):
         defaults = dict(lr=lr, betas=betas, eps=eps, weight_decay=weight_decay)
         super().__init__(param_groups, defaults)
+        
+        # ==== ADD THIS SAFETY CHECK ====
+        world_size = dist.get_world_size() if dist.is_initialized() else 1
+        for group in self.param_groups:
+            for p in group['params']:
+                if p.numel() % world_size != 0:
+                    raise RuntimeError(
+                        f"CRITICAL ERROR: Parameter shape {p.shape} (size {p.numel()}) "
+                        f"is not divisible by world_size ({world_size}). "
+                        "DistAdamW requires params to be evenly divisible or padded."
+                    )
+        # ===============================
 
-    @torch.compile
+    # @torch.compile
     @torch.no_grad()
     def step(self):
         rank = dist.get_rank()
@@ -28,6 +40,19 @@ class DistAdamW(torch.optim.Optimizer):
             params: list[Tensor] = group["params"]
             for base_i in range(len(params)):
                 grad = params[base_i].grad
+                
+                # ================= DEBUG START =================
+                # Check for corruption BEFORE sending to other GPUs
+                if grad is not None:
+                    if torch.isnan(grad).any() or torch.isinf(grad).any():
+                        print(f"\n!!!! CRITICAL FAILURE [Rank {rank}] !!!!")
+                        print(f"Gradient became NaN/Inf at param index {base_i}")
+                        print(f"Shape: {grad.shape}, Min: {grad.min()}, Max: {grad.max()}")
+                        sys.stdout.flush()
+                        # Force exit immediately to stop the hang
+                        sys.exit(1)
+                # ================= DEBUG END ===================
+                
                 rank_size = grad.shape[0] // world_size
                 grad_slice = torch.empty_like(grad[:rank_size])
                 reduce_scatter_futures.append(dist.reduce_scatter_tensor(grad_slice, grad, op=dist.ReduceOp.AVG, async_op=True).get_future())

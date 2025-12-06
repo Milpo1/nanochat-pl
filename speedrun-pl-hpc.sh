@@ -17,16 +17,35 @@ module load CUDA/12.8.0 ML-bundle/25.04
 module list
 
 # Set OpenMP threads based on available CPUs
-export OMP_NUM_THREADS=${SLURM_CPUS_PER_TASK:-8}
+export OMP_NUM_THREADS=1
 export MKL_NUM_THREADS=$OMP_NUM_THREADS
+
+
+# This forces the CPU to wait for every single GPU kernel. 
+# If a kernel fails (due to NaN or logic), Python crashes INSTANTLY at that line.
+export CUDA_LAUNCH_BLOCKING=1
+
+# 2. DEBUG DISTRIBUTED PROCESSES
+# Logs every collective operation (Start/End). You will see exactly which rank stops reporting.
+export TORCH_DISTRIBUTED_DEBUG=DETAIL
+export TORCH_SHOW_CPP_STACKTRACES=1
+
+# 3. DEBUG NCCL (The Communications)
+# Shows if NCCL receives invalid arguments or breaks connection.
+export NCCL_DEBUG=INFO
+export NCCL_DEBUG_SUBSYS=ALL
+export TORCH_NCCL_ASYNC_ERROR_HANDLING=1
+
+# 4. FLIGHT RECORDER (Kernel Trace)
+# Keeps a buffer of the last 20k kernels so if it hangs, we can dump the state.
+export TORCH_NCCL_TRACE_BUFFER_SIZE=20000
+export TORCH_FR_BUFFER_SIZE=20000
 
 # GPU count from SLURM
 NGPUS=${SLURM_GPUS_ON_NODE:-1}
 
 export UV_CACHE_DIR="${NANOCHAT_BASE_DIR}/.cache/uv"
 mkdir -p "$UV_CACHE_DIR"
-
-mkdir -p "${NANOCHAT_BASE_DIR}/base_checkpoints/d${DEPTH}"
 
 # Logs directory
 LOG_DIR="$NANOCHAT_BASE_DIR/logs"
@@ -133,9 +152,17 @@ log "  - GPUs: $NGPUS"
 log "  - Iterations: $NUM_ITERATIONS"
 log "  - WandB Run: $WANDB_RUN"
 
+
+export TORCH_NCCL_TRACE_BUFFER_SIZE=20000
+export TORCH_DISTRIBUTED_DEBUG=DETAIL
+
+
 # Run training with error handling
 if torchrun \
     --standalone \
+    --log-dir=logs \
+    --redirects 3 \
+    --tee 3 \
     --nproc_per_node="$NGPUS" \
     -m scripts.base_train -- \
     --depth="$DEPTH" \
@@ -145,6 +172,7 @@ if torchrun \
     --core_metric_every="$CORE_METRIC_EVERY" \
     --save_every="$SAVE_EVERY" \
     --run="$WANDB_RUN" \
+    --resume_from_step=38000 \
     2>&1 | tee -a "$LOGFILE"; then
     log "Pretraining completed successfully!"
 else

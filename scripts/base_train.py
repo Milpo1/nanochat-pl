@@ -129,7 +129,7 @@ if resuming:
     del model_data # free up this memory after the copy
 
 orig_model = model # original, uncompiled model, for saving raw model state_dict and for inference/evaluation (because the shapes may change shape)
-model = torch.compile(model, dynamic=False) # the inputs to model will never change shape so dynamic=False is safe
+# model = torch.compile(model, dynamic=False) # the inputs to model will never change shape so dynamic=False is safe
 num_params = sum(p.numel() for p in model.parameters())
 print0(f"Number of parameters: {num_params:,}")
 num_flops_per_token = model.estimate_flops()
@@ -319,10 +319,29 @@ while True:
     for micro_step in range(grad_accum_steps):
         with autocast_ctx:
             loss = model(x, y)
+            
+        # ==== DEBUG: LOSS CHECK ====
+        if torch.isnan(loss) or torch.isinf(loss):
+             import sys
+             print(f"!!! CRITICAL [Rank {ddp_rank}]: Loss exploded (NaN/Inf) at step {step} !!!")
+             sys.stdout.flush()
+             sys.exit(1)
+        # ===========================
+            
         train_loss = loss.detach() # for logging
         loss = loss / grad_accum_steps # each .backward() is a grad sum => normalize loss here
         loss.backward()
         x, y, dataloader_state_dict = next(train_loader) # prefetch the next batch while the GPU is busy with forward/backward
+    
+            # ==== DEBUG: DATA INTEGRITY CHECK ====
+        if step > 38000: # Only check near the crash to save time
+             # Check for corrupted tokens (assuming GPT-2 vocab size ~50257, adjust if larger)
+             if x.max() >= 50565 or x.min() < 0:
+                 print(f"!!! CRITICAL [Rank {ddp_rank}]: Loaded CORRUPT tokens at step {step} !!!")
+                 print(f"Max token: {x.max().item()}, Min token: {x.min().item()}")
+                 import sys; sys.stdout.flush(); sys.exit(1)
+        # =====================================
+    
     # gradient clipping
     grad_clip_enabled = grad_clip > 0.0
     if grad_clip_enabled:

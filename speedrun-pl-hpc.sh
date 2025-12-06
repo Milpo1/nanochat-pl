@@ -26,6 +26,8 @@ NGPUS=${SLURM_GPUS_ON_NODE:-1}
 export UV_CACHE_DIR="${NANOCHAT_BASE_DIR}/.cache/uv"
 mkdir -p "$UV_CACHE_DIR"
 
+mkdir -p "${NANOCHAT_BASE_DIR}/base_checkpoints/d${DEPTH}"
+
 # Logs directory
 LOG_DIR="$NANOCHAT_BASE_DIR/logs"
 mkdir -p "$LOG_DIR"

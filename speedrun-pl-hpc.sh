@@ -17,7 +17,8 @@ module load CUDA/12.8.0 ML-bundle/25.04
 module list
 
 # Set OpenMP threads based on available CPUs
-export OMP_NUM_THREADS=${SLURM_CPUS_PER_TASK:-8}
+export OMP_NUM_THREADS=1
+#${SLURM_CPUS_PER_TASK:-8}
 export MKL_NUM_THREADS=$OMP_NUM_THREADS
 
 # GPU count from SLURM

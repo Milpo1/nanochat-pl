@@ -44,8 +44,8 @@ class FinewebIterableDataset(IterableDataset):
         parquet_paths = list_parquet_files()
         parquet_paths = parquet_paths[:-1] if self.split == "train" else parquet_paths[-1:]
 
-        resume_pq_idx = resume_state_dict["pq_idx"] if resume_state_dict is not None else 0
-        resume_rg_idx = resume_state_dict["rg_idx"] if resume_state_dict is not None else None
+        resume_pq_idx = self.resume_state_dict["pq_idx"] if self.resume_state_dict is not None else 0
+        resume_rg_idx = self.resume_state_dict["rg_idx"] if self.resume_state_dict is not None else None
 
         pq_idx = resume_pq_idx # we kick off parquet files at the resume index (or by default just 0)
         token_buffer = deque()

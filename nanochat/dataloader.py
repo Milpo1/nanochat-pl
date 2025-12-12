@@ -5,7 +5,6 @@ import pyarrow.parquet as pq
 
 from nanochat.common import get_dist_info
 from nanochat.dataset import list_parquet_files, Fineweb2pl
-from nanochat.tokenizer import get_tokenizer
 
 def state_tracking_collate(batch):
     """

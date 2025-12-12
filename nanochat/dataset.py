@@ -31,7 +31,7 @@ class Fineweb2pl(IterableDataset):
             num_workers = 1
         else:
             process_id = worker_info.id
-            num_worers = worker_info.num_workers
+            num_workers = worker_info.num_workers
         
         world_size = self.ddp_world_size * num_workers
         local_rank = self.ddp_rank + self.ddp_world_size * process_id

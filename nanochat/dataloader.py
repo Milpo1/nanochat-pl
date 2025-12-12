@@ -26,7 +26,7 @@ def state_tracking_collate(batch):
     return stacked_tensors, {"pq_idx": last_pq_idx, "rg_idx": last_rg_idx}
 
 
-def tokenizing_distributed_data_loader(B, T, split, device="cuda", num_workers=4, resume_state=None):
+def tokenizing_distributed_data_loader_with_state(B, T, split, device="cuda", num_workers=4, resume_state=None):
     """
     Stream pretraining text from parquet files, tokenize, yield training batches.
 

@@ -1,8 +1,8 @@
 from torch.utils.data import IterableDataset
 import pyarrow.parquet as pq
 from nanochat.tokenizer import get_tokenizer
-from nanochat.common import get_dist_info
 from collections import deque
+import os
 
 def list_parquet_files(data_dir=None):
     """ Looks into a data dir and returns full paths to all parquet files. """

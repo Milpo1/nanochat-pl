@@ -14,9 +14,9 @@ def list_parquet_files(data_dir=None):
     parquet_paths = [os.path.join(data_dir, f) for f in parquet_files]
     return parquet_paths
 
-class Fineweb2pl(IterableDataset):
+class FinewebIterableDataset(IterableDataset):
     def __init__(self, T, ddp_world_size, ddp_rank, split,  resume_state_dict=None):
-        super(Fineweb2pl).__init__()
+        super(FinewebIterableDataset).__init__()
         self.ddp_world_size = ddp_world_size
         self.ddp_rank = ddp_rank
         self.split = split

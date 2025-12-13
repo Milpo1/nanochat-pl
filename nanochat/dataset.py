@@ -1,4 +1,5 @@
 from torch.utils.data import IterableDataset
+import torch
 import pyarrow.parquet as pq
 from nanochat.tokenizer import get_tokenizer
 from collections import deque

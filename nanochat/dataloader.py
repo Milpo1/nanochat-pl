@@ -1,10 +1,8 @@
-from collections import deque
-
 import torch
-import pyarrow.parquet as pq
 
 from nanochat.common import get_dist_info
-from nanochat.dataset import list_parquet_files, Fineweb2pl
+from nanochat.dataset import FinewebIterableDataset
+from torch.utils.data import DataLoader
 
 def state_tracking_collate(batch):
     """
@@ -25,7 +23,7 @@ def state_tracking_collate(batch):
     return stacked_tensors, {"pq_idx": last_pq_idx, "rg_idx": last_rg_idx}
 
 
-def tokenizing_distributed_data_loader_with_state(B, T, split, device="cuda", num_workers=4, resume_state=None):
+def tokenizing_distributed_data_loader_with_state(B, T, split, device="cuda", num_workers=4, resume_state_dict=None):
     """
     Stream pretraining text from parquet files, tokenize, yield training batches.
 
@@ -41,12 +39,12 @@ def tokenizing_distributed_data_loader_with_state(B, T, split, device="cuda", nu
     
     ddp, ddp_rank, _, ddp_world_size = get_dist_info()
     
-    dataset = Fineweb2pl(
+    dataset = FinewebIterableDataset(
         T=T,
         ddp_world_size=ddp_world_size,
         ddp_rank=ddp_rank,
         split=split,
-        resume_state_dict=resume_state
+        resume_state_dict=resume_state_dict
     )
     
     loader = DataLoader(

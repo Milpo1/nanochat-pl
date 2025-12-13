@@ -4,6 +4,11 @@ import pyarrow.parquet as pq
 from nanochat.tokenizer import get_tokenizer
 from collections import deque
 import os
+from nanochat.common import get_base_dir
+
+base_dir = get_base_dir()
+DATA_DIR = os.path.join(base_dir, "base_data")
+os.makedirs(DATA_DIR, exist_ok=True)
 
 def list_parquet_files(data_dir=None):
     """ Looks into a data dir and returns full paths to all parquet files. """

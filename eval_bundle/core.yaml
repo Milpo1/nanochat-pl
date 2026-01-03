@@ -33,3 +33,27 @@ icl_tasks:
   num_fewshot: [5]
   icl_task_type: language_modeling 
   continuation_delimiter: "\nOdpowiedź: "
+-
+  label: truthful_qa_mc1_pl
+  dataset_uri: polish/truthful_qa_PL.jsonl
+  num_fewshot: [0]
+  icl_task_type: multiple_choice
+  continuation_delimiter: "\nOdpowiedź: "
+-
+  label: truthful_qa_mc2_pl
+  dataset_uri: polish/truthful_qa_PL.jsonl
+  num_fewshot: [0]
+  icl_task_type: multiple_choice_mc2
+  continuation_delimiter: "\nOdpowiedź: "
+-
+  label: llmzszl_8k_zeroshot
+  dataset_uri: polish/llmzszl_8k.jsonl
+  num_fewshot: [0]
+  icl_task_type: multiple_choice
+  continuation_delimiter: "\nOdpowiedź: "
+- 
+  label: llmzszl_8k
+  dataset_uri: polish/llmzszl_8k.jsonl
+  num_fewshot: [5]
+  icl_task_type: multiple_choice
+  continuation_delimiter: "\nOdpowiedź: "

@@ -181,7 +181,7 @@ def evaluate_example(idx, model, tokenizer, data, device, task_meta):
         fewshot_examples = [data[i] for i in fewshot_indices]
 
     # Render prompts and batch sequences based on task type
-    if task_type == 'multiple_choice':
+    if task_type in  ['multiple_choice', 'multiple_choice_mc2']:
         prompts = render_prompts_mc(item, continuation_delimiter, fewshot_examples)
         tokens, start_idxs, end_idxs = batch_sequences_mc(tokenizer, prompts)
     elif task_type == 'schema':
@@ -235,6 +235,28 @@ def evaluate_example(idx, model, tokenizer, data, device, task_meta):
                         for i, (si, ei) in enumerate(zip(start_idxs, end_idxs))]
         pred_idx = mean_losses.index(min(mean_losses))
         is_correct = pred_idx == item['gold']
+    elif task_type == 'truthful_qa_mc2':
+        # Calculate mean loss for every choice
+        mean_losses = [losses[i, si-1:ei-1].mean().item()
+                        for i, (si, ei) in enumerate(zip(start_idxs, end_idxs))]
+        
+        # Convert losses to unnormalized probabilities (likelihoods)
+        # using -loss as logit. softmax(logits) gives normalized probabilities.
+        # We use float64 to prevent potential underflow issues with exp
+        logits = torch.tensor(mean_losses, device=device, dtype=torch.float64) * -1.0
+        probs = torch.nn.functional.softmax(logits, dim=0)
+
+        # Sum the probabilities of the choices labeled as True (1)
+        labels = item['labels']
+        assert len(labels) == len(probs), "Number of labels must match number of choices"
+        
+        total_true_prob = 0.0
+        for prob, label in zip(probs, labels):
+            if label == 1:
+                total_true_prob += prob.item()
+        
+        # The 'accuracy' for this example is the probability mass on true answers (0.0 to 1.0)
+        is_correct = total_true_prob
     else:
         raise ValueError(f"Unsupported task type: {task_type}")
 

@@ -235,7 +235,7 @@ def evaluate_example(idx, model, tokenizer, data, device, task_meta):
                         for i, (si, ei) in enumerate(zip(start_idxs, end_idxs))]
         pred_idx = mean_losses.index(min(mean_losses))
         is_correct = pred_idx == item['gold']
-    elif task_type == 'truthful_qa_mc2':
+    elif task_type == 'multiple_choice_mc2':
         # Calculate mean loss for every choice
         mean_losses = [losses[i, si-1:ei-1].mean().item()
                         for i, (si, ei) in enumerate(zip(start_idxs, end_idxs))]

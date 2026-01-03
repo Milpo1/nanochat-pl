@@ -58,3 +58,9 @@ hellaswag_pl,polish,multiple choice,10,10042,25,,Polish translation of HellaSwag
 mmlu_zeroshot_pl,polish,multiple choice,0,14042,25,,Polish translation of MMLU (Zero-shot)
 mmlu_pl,polish,multiple choice,5,14042,25,,Polish translation of MMLU
 gsm8k_pl,polish,language modeling,5,1319,0,,Polish translation of GSM8K
+truthful_qa_mc1_pl,polish,multiple choice,0,817,25,,truthful_qa_mc1_pl
+truthful_qa_mc2_pl,polish,multiple choice mc2,0,817,25,,truthful_qa_mc2_pl
+llmzszl_8k_zeroshot,polish,multiple choice,0,8192,25,,llmzszl_8k_zeroshot
+llmzszl_8k,polish,multiple choice,5,8192,25,,llmzszl_8k
+pes_8k_zeroshot,polish,multiple choice,0,8192,25,,pes_8k_zeroshot
+pes_8k,polish,multiple choice,5,8192,25,,pes_8k

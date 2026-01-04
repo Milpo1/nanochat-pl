@@ -136,11 +136,7 @@ class GPT(nn.Module):
     def __init__(self, config, pad_vocab_size_to=64):
         super().__init__()
         self.config = config
-        # For DDP, we want vocab_size divisible by world_size. Also, there are potential performance benefits, see:
-        # https://huggingface.co/docs/transformers/main_classes/model#transformers.PreTrainedModel.resize_token_embeddings
-        padded_vocab_size = ((config.vocab_size + pad_vocab_size_to - 1) // pad_vocab_size_to) * pad_vocab_size_to
-        if padded_vocab_size != config.vocab_size:
-            print0(f"Padding vocab_size from {config.vocab_size} to {padded_vocab_size} to be divisible by {pad_vocab_size_to}")
+        padded_vocab_size = config.vocab_size
         self.transformer = nn.ModuleDict({
             "wte": nn.Embedding(padded_vocab_size, config.n_embd),
             "h": nn.ModuleList([Block(config, layer_idx) for layer_idx in range(config.n_layer)]),

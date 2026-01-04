@@ -17,7 +17,7 @@ module list
 
 export NANOCHAT_DATA_SOURCE_PATTERN="gs://finewebedupl/runpod/full_dataset_gt_2.5/*.parquet"
 export FINEWEB_BASE_DIR="${SCRATCH}/finewebedupl2"
-export NANOCHAT_BASE_DIR="${FINEWEB_BASE_DIR}/nanochat-pl"
+export NANOCHAT_BASE_DIR="$/workspace/nanochat-pl"
 
 export DEVICE_BATCH_SIZE=32
 export NUM_ITERATIONS=40000

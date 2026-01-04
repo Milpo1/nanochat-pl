@@ -24,7 +24,7 @@ export MKL_NUM_THREADS=$OMP_NUM_THREADS
 # GPU count from SLURM
 NGPUS=${SLURM_GPUS_ON_NODE:-1}
 
-export UV_CACHE_DIR="${NANOCHAT_BASE_DIR}/.cache/uv"
+export UV_CACHE_DIR="/workspace/nanochat-pl/.cache/uv"
 mkdir -p "$UV_CACHE_DIR"
 
 mkdir -p "${NANOCHAT_BASE_DIR}/base_checkpoints/d${DEPTH}"

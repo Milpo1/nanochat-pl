@@ -108,7 +108,7 @@ class HuggingFaceTokenizer:
         return self.tokenizer.token_to_id(text)
 
     def get_bos_token_id(self):
-        bos = self.encode_special("<|bos|>")
+        bos = self.encode_special("<s>")
         return bos
 
     def encode(self, text, prepend=None, append=None, num_threads=None):

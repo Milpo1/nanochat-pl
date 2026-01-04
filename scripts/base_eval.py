@@ -37,7 +37,7 @@ def place_eval_bundle(file_path):
     # here file_path is the path to the eval_bundle.zip file
     # we need to unzip it and place it in the base directory
     base_dir = get_base_dir()
-    eval_bundle_dir = os.path.join(base_dir, "eval_bundle")
+    eval_bundle_dir = os.path.join('/workspace/nanochat-pl/', "eval_bundle")
     with tempfile.TemporaryDirectory() as tmpdir:
         with zipfile.ZipFile(file_path, 'r') as zip_ref:
             zip_ref.extractall(tmpdir)
@@ -52,7 +52,7 @@ def evaluate_model(model, tokenizer, device, max_per_task=-1):
     """
     # Load config and task metadata
     base_dir = get_base_dir()
-    eval_bundle_dir = os.path.join(base_dir, "eval_bundle")
+    eval_bundle_dir = os.path.join('/workspace/nanochat-pl/', "eval_bundle")
     # Download the eval bundle to disk (and unzip if needed)
     if not os.path.exists(eval_bundle_dir):
         download_file_with_lock(EVAL_BUNDLE_URL, "eval_bundle.zip", postprocess_fn=place_eval_bundle)

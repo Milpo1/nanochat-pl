@@ -69,3 +69,16 @@ icl_tasks:
   num_fewshot: [5]
   icl_task_type: multiple_choice
   continuation_delimiter: "\nOdpowiedź: "
+-
+  label: belebele_zeroshot_pl
+  dataset_uri: polish/belebele_PL.jsonl
+  num_fewshot: [0]
+  icl_task_type: multiple_choice
+  continuation_delimiter: "\nOdpowiedź: "
+- 
+  label: belebele_pl
+  dataset_uri: polish/belebele_PL.jsonl
+  num_fewshot: [5]
+  icl_task_type: multiple_choice
+  continuation_delimiter: "\nOdpowiedź: "
+-

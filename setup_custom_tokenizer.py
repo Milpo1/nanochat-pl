@@ -3,7 +3,7 @@ import torch
 from tokenizers import Tokenizer
 
 # 1. Define paths
-my_tokenizer_path = "./tokenizer/our_tokenizer6.json" 
+my_tokenizer_path = "./tokenizer/polish_web_tokenizer_8_NFC.json" 
 target_dir = "./tokenizer"
 os.makedirs(target_dir, exist_ok=True)
 

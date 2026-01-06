@@ -10,11 +10,6 @@ NUM_ITERATIONS="${NUM_ITERATIONS:-100}"
 WANDB_RUN="${WANDB_RUN:-fineweb2edupl-hpc-$(date +%Y%m%d-%H%M)}"
 # --- HPC Environment Setup ---
 # Load required modules (adjust for your HPC system)
-module purge
-
-module load CUDA/12.8.0 ML-bundle/25.04
-
-module list
 
 # Set OpenMP threads based on available CPUs
 export OMP_NUM_THREADS=1
@@ -72,6 +67,7 @@ if ! command -v uv &> /dev/null; then
     log "Installing uv..."
     curl -LsSf https://astral.sh/uv/install.sh | sh
     export PATH="$HOME/.cargo/bin:$PATH"
+    source $HOME/.local/bin/env
 fi
 
 # Create or activate virtual environment
@@ -85,7 +81,7 @@ source "$VENV_DIR/bin/activate"
 
 # Sync dependencies
 log "Syncing dependencies..."
-UV_EXTRA_INDEX_URL="$PIP_EXTRA_INDEX_URL" UV_CACHE_DIR="$UV_CACHE_DIR" uv sync --extra gpu
+UV_CACHE_DIR="$UV_CACHE_DIR" uv sync --extra gpu
 
 # Verify installation
 log "Python: $(which python)"

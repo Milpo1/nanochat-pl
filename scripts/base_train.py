@@ -44,13 +44,13 @@ target_param_data_ratio = 20 # calculate num_iterations to maintain fixed data:p
 # Optimization
 device_batch_size = 32 # per-device batch size (set to not OOM)
 total_batch_size = 524288 # total desired batch size, in #tokens
-embedding_lr = 0.2 # learning rate for the embedding parameters (Adam)
+embedding_lr = 0.3 # learning rate for the embedding parameters (Adam)
 unembedding_lr = 0.004 # learning rate for the unembedding parameters (Adam)
 weight_decay = 0.0 # weight decay for the embedding/unembedding parameters (Adam)
 matrix_lr = 0.02 # learning rate for the matrix parameters (Muon)
 grad_clip = 1.0 # gradient clipping value (0.0 = disabled)
 warmup_ratio = 0.0 # ratio of iterations for LR warmup
-warmdown_ratio = 0.2 # ratio of iterations for LR warmdown
+warmdown_ratio = 0.4 # ratio of iterations for LR warmdown
 final_lr_frac = 0.0 # final LR is this fraction of the initial LR
 resume_from_step = -1 # resume training from this step of the optimization (-1 = disable)
 # Evaluation

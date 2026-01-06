@@ -13,6 +13,9 @@ export NNODES=$SLURM_NNODES
 export NPROC_PER_NODE=${SLURM_GPUS_ON_NODE:-4}
 
 export UV_CACHE_DIR="${NANOCHAT_BASE_DIR}/.cache/uv"
+mkdir -p "$UV_CACHE_DIR"
+mkdir -p "${NANOCHAT_BASE_DIR}/base_checkpoints/d${DEPTH}"
+
 export OMP_NUM_THREADS=1
 export MKL_NUM_THREADS=1
 export PYTHONDONTWRITEBYTECODE=1
@@ -22,7 +25,12 @@ export NCCL_DEBUG=INFO
 
 # Log file specific to this node
 LOG_DIR="$NANOCHAT_BASE_DIR/logs"
+mkdir -p "$LOG_DIR"
 LOGFILE="$LOG_DIR/run_${SLURM_JOB_ID}_node_${NODE_RANK}.log"
+
+export WANDB_DIR="$NANOCHAT_BASE_DIR/wandb_logs"
+mkdir -p "$WANDB_DIR"
+export WANDB_PROJECT="fineweb2edupl"
 
 log() {
     echo "[Node $NODE_RANK] [$(date '+%Y-%m-%d %H:%M:%S')] $*" | tee -a "$LOGFILE"
@@ -36,6 +44,22 @@ VENV_DIR="$NANOCHAT_BASE_DIR/.venv"
 SETUP_FLAG="$NANOCHAT_BASE_DIR/.setup_complete"
 
 if [ "$NODE_RANK" -eq 0 ]; then
+
+        # --- System Information ---
+    log "=== Job Information ==="
+    log "Job ID: ${SLURM_JOB_ID:-N/A}"
+    log "Node: $(hostname)"
+    log "GPUs: $NGPUS"
+    log "CPUs per task: ${SLURM_CPUS_PER_TASK:-N/A}"
+    log "OMP Threads: $OMP_NUM_THREADS"
+    log "Working Directory: $(pwd)"
+    log "Base Directory: $NANOCHAT_BASE_DIR"
+
+    if command -v nvidia-smi &> /dev/null; then
+        log "=== GPU Information ==="
+        nvidia-smi | tee -a "$LOGFILE"
+    fi
+
     log "=== Node 0: Initializing Environment ==="
 
     if ! command -v uv &> /dev/null; then
@@ -50,8 +74,11 @@ if [ "$NODE_RANK" -eq 0 ]; then
     fi
 
     source "$VENV_DIR/bin/activate"
-    uv sync --extra gpu
-    
+    UV_EXTRA_INDEX_URL="$PIP_EXTRA_INDEX_URL" UV_CACHE_DIR="$UV_CACHE_DIR" uv sync --extra gpu
+    log "Python: $(which python)"
+    log "Python version: $(python --version)"
+    log "$(python -c "import torch; print(f'Torch Version: {torch.__version__}\nCUDA Available: {torch.cuda.is_available()}\nDevice Name: {torch.cuda.get_device_name(0)}')")"
+
     # Only Node 0 downloads
     DATA_DIR="$NANOCHAT_BASE_DIR/base_data"
     if [ ! -d "$DATA_DIR" ] || [ -z "$(ls -A $DATA_DIR 2>/dev/null)" ]; then
@@ -59,7 +86,7 @@ if [ "$NODE_RANK" -eq 0 ]; then
         uv pip install google-cloud-storage
         python gcp_fetch.py --key=$HOME/.keys/gcs-read-only.json --src=$NANOCHAT_DATA_SOURCE_PATTERN --dest=$DATA_DIR
     fi
-    
+    python -m nanochat.report reset
     touch "$SETUP_FLAG"
 else
     log "Waiting for Node 0 to complete setup..."

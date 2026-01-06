@@ -21,7 +21,6 @@ export MKL_NUM_THREADS=1
 export PYTHONDONTWRITEBYTECODE=1
 
 export NCCL_SOCKET_IFNAME=hsn
-export NCCL_DEBUG=INFO
 
 # Log file specific to this node
 LOG_DIR="$NANOCHAT_BASE_DIR/logs"
@@ -57,7 +56,7 @@ if [ "$NODE_RANK" -eq 0 ]; then
     log "Base Directory: $NANOCHAT_BASE_DIR"
 
     if command -v nvidia-smi &> /dev/null; then
-        log "=== GPU Information ==="
+        log "=== GPU Information Node: $(hostname) ==="
         nvidia-smi | tee -a "$LOGFILE"
     fi
 
@@ -90,6 +89,11 @@ if [ "$NODE_RANK" -eq 0 ]; then
     python -m nanochat.report reset
     touch "$SETUP_FLAG"
 else
+    if command -v nvidia-smi &> /dev/null; then
+        log "=== GPU Information Node: $(hostname) ==="
+        nvidia-smi | tee -a "$LOGFILE"
+    fi
+
     log "Waiting for Node 0 to complete setup..."
     while [ ! -f "$NANOCHAT_BASE_DIR/.setup_complete" ]; do
         sleep 5
@@ -97,7 +101,6 @@ else
     log "Setup detected. Activating environment."
     source "$VENV_DIR/bin/activate"
 fi
-
 log "=== Starting Torchrun ==="
 
 torchrun \

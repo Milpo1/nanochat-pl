@@ -11,73 +11,14 @@ icl_tasks:
   num_fewshot: [0]
   icl_task_type: multiple_choice
 -
-  label: hellaswag_pl
-  dataset_uri: polish/hellaswag_PL_2k.jsonl
-  num_fewshot: [10]
-  icl_task_type: multiple_choice
--
   label: mmlu_zeroshot_pl
   dataset_uri: polish/mmlu_PL_2k.jsonl
   num_fewshot: [0]
   icl_task_type: multiple_choice
   continuation_delimiter: "\nOdpowiedź: "
 -
-  label: mmlu_pl
-  dataset_uri: polish/mmlu_PL_2k.jsonl
-  num_fewshot: [5]
-  icl_task_type: multiple_choice
-  continuation_delimiter: "\nOdpowiedź: "
--
-  label: gsm8k_pl
-  dataset_uri: polish/gsm8k_PL.jsonl
-  num_fewshot: [5]
-  icl_task_type: language_modeling 
-  continuation_delimiter: "\nOdpowiedź: "
--
-  label: truthful_qa_mc1_pl
-  dataset_uri: polish/truthful_qa_PL.jsonl
-  num_fewshot: [0]
-  icl_task_type: multiple_choice
-  continuation_delimiter: "\nOdpowiedź: "
--
-  label: truthful_qa_mc2_pl
-  dataset_uri: polish/truthful_qa_PL.jsonl
-  num_fewshot: [0]
-  icl_task_type: multiple_choice_mc2
-  continuation_delimiter: "\nOdpowiedź: "
--
   label: llmzszl_zeroshot
   dataset_uri: polish/llmzszl_2k.jsonl
   num_fewshot: [0]
-  icl_task_type: multiple_choice
-  continuation_delimiter: "\nOdpowiedź: "
-- 
-  label: llmzszl
-  dataset_uri: polish/llmzszl_2k.jsonl
-  num_fewshot: [5]
-  icl_task_type: multiple_choice
-  continuation_delimiter: "\nOdpowiedź: "
--
-  label: pes_zeroshot
-  dataset_uri: polish/pes_2k.jsonl
-  num_fewshot: [0]
-  icl_task_type: multiple_choice
-  continuation_delimiter: "\nOdpowiedź: "
-- 
-  label: pes
-  dataset_uri: polish/pes_2k.jsonl
-  num_fewshot: [5]
-  icl_task_type: multiple_choice
-  continuation_delimiter: "\nOdpowiedź: "
--
-  label: belebele_zeroshot_pl
-  dataset_uri: polish/belebele_PL.jsonl
-  num_fewshot: [0]
-  icl_task_type: multiple_choice
-  continuation_delimiter: "\nOdpowiedź: "
-- 
-  label: belebele_pl
-  dataset_uri: polish/belebele_PL.jsonl
-  num_fewshot: [5]
   icl_task_type: multiple_choice
   continuation_delimiter: "\nOdpowiedź: "

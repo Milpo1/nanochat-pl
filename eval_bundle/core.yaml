@@ -11,12 +11,6 @@ icl_tasks:
   num_fewshot: [0]
   icl_task_type: multiple_choice
 -
-  label: mmlu_zeroshot_pl
-  dataset_uri: polish/mmlu_PL_2k.jsonl
-  num_fewshot: [0]
-  icl_task_type: multiple_choice
-  continuation_delimiter: "\nOdpowiedź: "
--
   label: llmzszl_zeroshot
   dataset_uri: polish/llmzszl_2k.jsonl
   num_fewshot: [0]

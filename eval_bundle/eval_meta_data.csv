@@ -62,7 +62,7 @@ truthful_qa_mc1_pl,polish,multiple choice,0,817,25,,truthful_qa_mc1_pl
 truthful_qa_mc2_pl,polish,multiple choice mc2,0,817,25,,truthful_qa_mc2_pl
 llmzszl_zeroshot,polish,multiple choice,0,2048,25,,llmzszl_8k_zeroshot
 llmzszl,polish,multiple choice,5,2048,25,,llmzszl_8k
-pes_zeroshot,polish,multiple choice,0,2048,25,,pes_8k_zeroshot
-pes,polish,multiple choice,5,2048,25,,pes_8k
+pes_zeroshot,polish,multiple choice,0,2048,20,,pes_8k_zeroshot
+pes,polish,multiple choice,5,2048,20,,pes_8k
 belebele_zeroshot_pl,polish,multiple choice,0,900,25,,belebele_PL_zeroshot
 belebele_pl,polish,multiple choice,5,900,25,,belebele_PL

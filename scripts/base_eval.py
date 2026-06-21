@@ -269,8 +269,8 @@ def main():
         if not use_dummy_wandb:
             log_data = {
                 "core_metric": summary["core_metric"],
-                **summary["centered_results"],
-                **{f"{k}_raw_acc": v for k, v in summary["results"].items()},
+                **{f"centered_results.{k}": v for k, v in summary["centered_results"].items()},
+                **{f"results.{k}": v for k, v in summary["results"].items()},
             }
             if summary["logged_step"] is not None:
                 log_data["step"] = summary["logged_step"]

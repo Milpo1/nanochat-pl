@@ -11,6 +11,7 @@ The script will print the CORE metric to the console.
 """
 import os
 import csv
+import glob
 import time
 import json
 import yaml
@@ -20,11 +21,12 @@ import zipfile
 import tempfile
 from contextlib import nullcontext
 
+import wandb
 import torch
 
-from nanochat.common import compute_init, compute_cleanup, print0, get_base_dir, autodetect_device_type, download_file_with_lock
+from nanochat.common import compute_init, compute_cleanup, print0, get_base_dir, autodetect_device_type, download_file_with_lock, DummyWandb
 from nanochat.tokenizer import HuggingFaceTokenizer
-from nanochat.checkpoint_manager import load_model
+from nanochat.checkpoint_manager import find_largest_model, find_last_step, build_model
 from nanochat.core_eval import evaluate_task
 
 # -----------------------------------------------------------------------------
@@ -144,21 +146,16 @@ def load_hf_model(hf_path: str, device):
     return model, tokenizer
 
 # -----------------------------------------------------------------------------
-def main():
-    import argparse
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--hf-path', type=str, default=None, help='HuggingFace model path to evaluate')
-    parser.add_argument('--max-per-task', type=int, default=-1, help='Max examples per task to evaluate (-1 = disable)')
-    parser.add_argument('--model-tag', type=str, default=None, help='optional model tag for the output directory name')
-    parser.add_argument('--step', type=str, default=None, help='optional model step for the output directory name')
-    args = parser.parse_args()
+def find_all_steps(checkpoint_dir):
+    """List every checkpoint step available in a checkpoint_dir, sorted ascending."""
+    checkpoint_files = glob.glob(os.path.join(checkpoint_dir, "model_*.pt"))
+    if not checkpoint_files:
+        raise FileNotFoundError(f"No checkpoints found in {checkpoint_dir}")
+    steps = sorted(int(os.path.basename(f).split("_")[-1].split(".")[0]) for f in checkpoint_files)
+    return steps
 
-    # distributed / precision setup
-    device_type = autodetect_device_type()
-    ddp, ddp_rank, ddp_local_rank, ddp_world_size, device = compute_init(device_type)
-    autocast_ctx = torch.amp.autocast(device_type=device_type, dtype=torch.bfloat16) if device_type == "cuda" else nullcontext()
-
-    # Load model and tokenizer from command line or from file system
+def evaluate_one_checkpoint(args, device, autocast_ctx, ddp_rank, checkpoint_dir=None, step=None):
+    """Load one checkpoint (or the HF model), evaluate it, write its CSV, return summary fields for wandb."""
     if args.hf_path is not None:
         # atm assume that if a path is given, it's a huggingface model path
         hf_path = args.hf_path
@@ -166,19 +163,25 @@ def main():
         model, tokenizer = load_hf_model(hf_path, device)
         model_name = hf_path # just for logging
         model_slug = hf_path.replace("/", "-") # for the output csv file
+        logged_step = None
     else:
-        # load a local model from the file system
-        model, tokenizer, meta = load_model("base", device, phase="eval", model_tag=args.model_tag, step=args.step)
-        model_name = f"base_model (step {meta['step']})" # just for logging
-        model_slug = f"base_model_{meta['step']:06d}" # for the output csv file
+        # load directly from the resolved checkpoint directory (either an explicit
+        # --checkpoint-dir, or one derived from base_checkpoints/<model_tag>)
+        model, tokenizer, meta = build_model(checkpoint_dir, step, device, phase="eval")
+        dir_name = os.path.basename(checkpoint_dir.rstrip('/'))
+        model_name = f"{dir_name} (step {meta['step']})" # just for logging
+        model_slug = f"{dir_name}_{meta['step']:06d}" # for the output csv file
+        logged_step = meta["step"]
 
     # Evaluate the model
     with autocast_ctx:
         out = evaluate_model(model, tokenizer, device, max_per_task=args.max_per_task)
+    del model
 
     # Write out the results to a csv file
     core_metric = None
     centered_results = {}
+    results = {}
     if ddp_rank == 0:
         base_dir = get_base_dir()
         output_csv_path = os.path.join(base_dir, "base_eval", f"{model_slug}.csv")
@@ -208,6 +211,72 @@ def main():
         centered_results, # the full table
     ])
 
+    return {
+        "logged_step": logged_step,
+        "core_metric": core_metric,
+        "centered_results": centered_results,
+        "results": results,
+    }
+
+def main():
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--hf-path', type=str, default=None, help='HuggingFace model path to evaluate')
+    parser.add_argument('--max-per-task', type=int, default=-1, help='Max examples per task to evaluate (-1 = disable)')
+    parser.add_argument('--model-tag', type=str, default=None, help='optional model tag for the output directory name')
+    parser.add_argument('--checkpoint-dir', type=str, default=None, help='exact directory containing model_<step>.pt/meta_<step>.json (bypasses --model-tag / base_checkpoints resolution, useful when checkpoints for different runs live in separate folders)')
+    parser.add_argument('--step', type=int, default=None, help='optional model step for the output directory name')
+    parser.add_argument('--steps', type=str, default=None, help='comma-separated list of steps to evaluate, or "all" to evaluate every checkpoint found in the checkpoint dir; overrides --step')
+    parser.add_argument('--run', type=str, default='dummy', help='wandb run name ("dummy" = no wandb logging)')
+    args = parser.parse_args()
+
+    # distributed / precision setup
+    device_type = autodetect_device_type()
+    ddp, ddp_rank, ddp_local_rank, ddp_world_size, device = compute_init(device_type)
+    autocast_ctx = torch.amp.autocast(device_type=device_type, dtype=torch.bfloat16) if device_type == "cuda" else nullcontext()
+    master_process = ddp_rank == 0
+
+    # wandb logging init (once, regardless of how many checkpoints get evaluated below)
+    use_dummy_wandb = args.run == "dummy" or not master_process
+    wandb_run = DummyWandb() if use_dummy_wandb else wandb.init(project="nanochat", name=args.run, config=vars(args))
+
+    # Resolve the checkpoint directory (None when using --hf-path, which doesn't need one)
+    checkpoint_dir = None
+    if args.hf_path is None:
+        if args.checkpoint_dir is not None:
+            checkpoint_dir = args.checkpoint_dir
+        else:
+            base_dir = get_base_dir()
+            model_tag = args.model_tag or find_largest_model(os.path.join(base_dir, "base_checkpoints"))
+            checkpoint_dir = os.path.join(base_dir, "base_checkpoints", model_tag)
+
+    # Resolve which steps to evaluate
+    if args.hf_path is not None:
+        steps_to_eval = [None]
+    elif args.steps is not None:
+        if args.steps == "all":
+            steps_to_eval = find_all_steps(checkpoint_dir)
+            print0(f"Found {len(steps_to_eval)} checkpoints in {checkpoint_dir}: {steps_to_eval}")
+        else:
+            steps_to_eval = [int(s) for s in args.steps.split(",")]
+    elif args.step is not None:
+        steps_to_eval = [args.step]
+    else:
+        steps_to_eval = [find_last_step(checkpoint_dir)]
+
+    for step in steps_to_eval:
+        summary = evaluate_one_checkpoint(args, device, autocast_ctx, ddp_rank, checkpoint_dir=checkpoint_dir, step=step)
+        if not use_dummy_wandb:
+            log_data = {
+                "core_metric": summary["core_metric"],
+                **summary["centered_results"],
+                **{f"{k}_raw_acc": v for k, v in summary["results"].items()},
+            }
+            if summary["logged_step"] is not None:
+                log_data["step"] = summary["logged_step"]
+            wandb_run.log(log_data)
+
+    wandb_run.finish()
     compute_cleanup()
 
 if __name__ == "__main__":

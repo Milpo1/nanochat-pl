@@ -45,7 +45,15 @@ class HuggingFaceTokenizer:
     @classmethod
     def from_pretrained(cls, hf_path):
         # init from a HuggingFace pretrained tokenizer (e.g. "gpt2")
-        tokenizer = HFTokenizer.from_pretrained(hf_path)
+        try:
+            from transformers import AutoTokenizer
+            tokenizer = AutoTokenizer.from_pretrained(hf_path)
+            if hasattr(tokenizer, "backend_tokenizer") and tokenizer.backend_tokenizer is not None:
+                tokenizer = tokenizer.backend_tokenizer
+            else:
+                tokenizer = HFTokenizer.from_pretrained(hf_path)
+        except Exception:
+            tokenizer = HFTokenizer.from_pretrained(hf_path)
         return cls(tokenizer)
 
     @classmethod
@@ -109,6 +117,10 @@ class HuggingFaceTokenizer:
 
     def get_bos_token_id(self):
         bos = self.encode_special("<|bos|>")
+        if bos is None:
+            bos = self.encode_special("<s>")
+        if bos is None:
+            bos = self.encode_special("<|endoftext|>")
         return bos
 
     def encode(self, text, prepend=None, append=None, num_threads=None):

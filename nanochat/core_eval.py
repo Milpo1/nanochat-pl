@@ -151,6 +151,8 @@ def forward_model(model, input_ids):
     outputs = model(input_ids)
     # Roll the tensor to the left by one position to get the (autoregressive) target ids
     target_ids = torch.roll(input_ids, shifts=-1, dims=1)
+    # Move target_ids to the same device as outputs (necessary if using device_map="auto")
+    target_ids = target_ids.to(outputs.device)
     # Calculate cross entropy at all positions
     losses = torch.nn.functional.cross_entropy(
         outputs.view(batch_size * seq_len, -1),
@@ -227,7 +229,7 @@ def evaluate_example(idx, model, tokenizer, data, device, task_meta):
         ei = end_idxs[0]
         # predictions[i] predict input_ids[i+1] autoregressively
         predicted_tokens = predictions[0, si-1:ei-1]
-        actual_tokens = input_ids[0, si:ei]
+        actual_tokens = input_ids[0, si:ei].to(predicted_tokens.device)
         is_correct = torch.all(predicted_tokens == actual_tokens).item()
     elif task_type in ['multiple_choice', 'schema']:
         # For MC/schema: find the option with lowest average loss

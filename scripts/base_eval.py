@@ -136,8 +136,15 @@ def load_hf_model(hf_path: str, device):
     print0(f"Loading model from: {hf_path}")
     # Load the model
     from transformers import AutoModelForCausalLM
-    model = AutoModelForCausalLM.from_pretrained(hf_path)
-    model.to(device)
+    import torch.distributed as dist
+    world_size = dist.get_world_size() if dist.is_initialized() else 1
+    
+    if world_size == 1:
+        model = AutoModelForCausalLM.from_pretrained(hf_path, device_map="auto", torch_dtype=torch.bfloat16)
+    else:
+        model = AutoModelForCausalLM.from_pretrained(hf_path, torch_dtype=torch.bfloat16)
+        model.to(device)
+        
     model.eval()
     max_seq_len = 1024 if "openai-community/gpt2" in hf_path else None
     model = ModelWrapper(model, max_seq_len=max_seq_len)
